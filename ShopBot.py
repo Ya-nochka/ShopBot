@@ -3,9 +3,7 @@ from translate import Translator
 import mysql.connector
 from mysql.connector import Error
 
-
-# Подключение к базе данных
-def connect(cmd=0):
+def connect():
     try:
         connection = mysql.connector.connect(host='37.140.192.81',
                                              database='u1256183_shop-helper',
@@ -17,16 +15,38 @@ def connect(cmd=0):
         else:
             print('Успешное подключение к базе данных')
 
-            if cmd == 1:
-                # try:
+    except Error as e:
+        print(e)
+
+    finally:
+        connection.close()
+
+
+# Get/create tg user
+def get_or_create(chat_id, name):
+    try:
+        connection = mysql.connector.connect(host='37.140.192.81',
+                                             database='u1256183_shop-helper',
+                                             user='u1256183_yana',
+                                             password='tD8lL6sQ2yjN8h')
+        if not connection.is_connected():
+            print('Ошибка подключения')
+
+        else:
+            print('Успешное подключение к базе данных')
+
+            with connection.cursor() as cursor:
+                select_all_rows = f"SELECT * FROM telegram_users WHERE external_id = {chat_id};"
+                cursor.execute(select_all_rows)
+                rows = cursor.fetchall()
+            print(rows)
+            if not rows:
+                print("Nothing found")
                 with connection.cursor() as cursor:
-                    select_all_rows = "SELECT * FROM telegram_users"
-                    cursor.execute(select_all_rows)
-                    rows = cursor.fetchall()
-                    for row in rows:
-                        print(row)
-                # except:
-                #     pass
+                    insert_query = "INSERT INTO telegram_users (external_id, name, notifications)" + f" VALUES ({chat_id}, '{name}', 1);"
+                    print(insert_query)
+                    cursor.execute(insert_query)
+                    connection.commit()
 
     except Error as e:
         print(e)
@@ -35,17 +55,12 @@ def connect(cmd=0):
         connection.close()
 
 
-def get_or_create(chat_id):
-    connect(cmd=1)
-
-
 # Обработка команды start
 def start(update, context):
     first_name = update.message.chat.first_name
     update.message.reply_text(
         f"Добро пожаловать, {first_name}. Меня зовут Олежка. Я буду твоим персональным помощником!")
-    chat_id = update.message.chat_id
-    get_or_create(chat_id)
+    get_or_create(update.message.chat_id, first_name)
 
 
 # Обработка команды help
@@ -69,7 +84,9 @@ def echo(update, context):
 
 # Телеграм бот
 def main():
-    connect()
+    debug_bt = True
+    if debug_bt:
+        connect()
 
     TOKEN = "5095243696:AAFRdkSXJsV5Ly_CwnhH5dKmpC-34dxXCLw"
 
