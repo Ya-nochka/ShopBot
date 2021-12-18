@@ -8,6 +8,7 @@ import re
 
 
 def get_or_create(chat_id, name):
+
     """
         Получить / создать пользователя tg
         Бот подключается к базе данных,
@@ -49,6 +50,7 @@ def get_or_create(chat_id, name):
 
 
 def add_link_to_db(chat_id, link):
+
     """
         Добавить ссылку для пользователя tg
         Необходимо соединение с MySQL
@@ -85,6 +87,7 @@ def add_link_to_db(chat_id, link):
 
 
 def start(update, context):
+
     """
         Обработка команды start
         Когда бот принимает на вход '/start', ему необходимо поприветсвовать клиента следующим сообщением:
@@ -99,6 +102,7 @@ def start(update, context):
 
 
 def help(update, context):
+
     """
         Обработка команды help
         Когда бот принимает на вход '/help', он выводит список возможных команд,
@@ -110,6 +114,7 @@ def help(update, context):
 
 
 def display(update, context):
+
     """
            Обработка команды display
            Когда бот принимает на вход '/display', он подключается к базе данных
@@ -151,6 +156,7 @@ def display(update, context):
 
 
 def delete(update, context):
+
     """
         Обработка команды delete
         :argument int
@@ -186,6 +192,7 @@ def delete(update, context):
 
 
 def error(update, context):
+
     """
         Возврат ошибки пользователю
         При введение пользователем команд, не встроенных в программу,
@@ -197,6 +204,7 @@ def error(update, context):
 
 
 def echo(update, context):
+
     """
         Обработка текстовых сообщений
         l принимает кол-во ссылок
@@ -223,6 +231,7 @@ def echo(update, context):
 
 
 def main():
+
     """
         Телеграм бот
         Функция регистрирует в госреестре обработчиков все возможные команды
