@@ -1,7 +1,7 @@
-# Telegram bot's passwords
+# Пароли ботов Telegram
 TOKEN = "5095243696:AAFRdkSXJsV5Ly_CwnhH5dKmpC-34dxXCLw"
 
-# MySQL database
+# База MySQL
 host = '37.140.192.81'
 database = 'u1256183_shop-helper'
 user = 'u1256183_yana'
