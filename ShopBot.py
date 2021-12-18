@@ -16,6 +16,7 @@ def get_or_create(chat_id, name):
         'Успешное подключение к базе данных' - соединение установлено
         Далее регистрируется ID клиента, использовавшего бот
     """
+
     try:
         connection = mysql.connector.connect(host=host,
                                              database=database,
@@ -55,6 +56,7 @@ def add_link_to_db(chat_id, link):
         Если соединение есть: 'Успешное подключение к базе данных'
         После этого выводится ID пользователя телеграм бота
     """
+
     try:
         connection = mysql.connector.connect(host=host,
                                              database=database,
@@ -89,6 +91,7 @@ def start(update, context):
         'Добро пожаловать, (имя пользователя).
         Меня зовут Олежка. Я буду твоим персональным помощником!'
     """
+
     first_name = update.message.chat.first_name
     update.message.reply_text(
         f"Добро пожаловать, {first_name}. Меня зовут Олежка. Я буду твоим персональным помощником!")
@@ -102,6 +105,7 @@ def help(update, context):
         с пояснением вызова каждой.
         Из них : start, display, delete
     """
+
     update.message.reply_text('start - Запуск бота\ndisplay - отображение всех ссылок\ndelete <id записи> - удаление ссылки (можно узнать набрав команду /display - первое значение)')
 
 
@@ -116,6 +120,7 @@ def display(update, context):
            в базе данных, а также ID пользователя, их добавивших
            Если их нет, бот возвращает: "Не нахожу ссылок"
        """
+
     try:
         connection = mysql.connector.connect(host=host,
                                              database=database,
@@ -158,6 +163,7 @@ def delete(update, context):
         или всех (по желанию клиента) ранее найденных ссылок из базы данных
 
     """
+
     this_id = int(' '.join(context.args))
     try:
         connection = mysql.connector.connect(host=host,
@@ -185,6 +191,7 @@ def error(update, context):
         При введение пользователем команд, не встроенных в программу,
         бот возвращает: 'Произошла ошибка бота :('
     """
+
     update.message.reply_text('Произошла ошибка бота :(')
 
 
@@ -197,6 +204,7 @@ def echo(update, context):
         елси ссылок введено больше, возвращает: "Отправляй ссылки по очереди)"
         При вводе какого-либо текстового сообщения, телеграмм бот переводит его на русский язык
     """
+
     link = update.message.text
     l = re.findall("(?P<url>https?://[^\s]+)", link)
     if len(l) == 1:
@@ -218,8 +226,8 @@ def main():
     """
         Телеграм бот
         Функция регистрирует в госреестре обработчиков все возможные команды
-
     """
+
     updater = Updater(TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
