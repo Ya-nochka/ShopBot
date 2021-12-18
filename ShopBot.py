@@ -2,33 +2,20 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from translate import Translator
 import mysql.connector
 from mysql.connector import Error
+from secrets import TOKEN, host, database, user, password
+import re
 
-def connect():
-    try:
-        connection = mysql.connector.connect(host='37.140.192.81',
-                                             database='u1256183_shop-helper',
-                                             user='u1256183_yana',
-                                             password='tD8lL6sQ2yjN8h')
-        if not connection.is_connected():
-            print('Ошибка подключения')
-
-        else:
-            print('Успешное подключение к базе данных')
-
-    except Error as e:
-        print(e)
-
-    finally:
-        connection.close()
+"""
+    Получить/Создать пользователя телеграмм
+"""
 
 
-# Get/create tg user
 def get_or_create(chat_id, name):
     try:
-        connection = mysql.connector.connect(host='37.140.192.81',
-                                             database='u1256183_shop-helper',
-                                             user='u1256183_yana',
-                                             password='tD8lL6sQ2yjN8h')
+        connection = mysql.connector.connect(host=host,
+                                             database=database,
+                                             user=user,
+                                             password=password)
         if not connection.is_connected():
             print('Ошибка подключения')
 
@@ -55,7 +42,41 @@ def get_or_create(chat_id, name):
         connection.close()
 
 
-# Обработка команды start
+"""
+    Добавить ссылку для пользователя тг
+"""
+
+
+def add_link_to_db(chat_id, link):
+    try:
+        connection = mysql.connector.connect(host=host,
+                                             database=database,
+                                             user=user,
+                                             password=password)
+        if not connection.is_connected():
+            print('Ошибка подключения')
+
+        else:
+            print('Успешное подключение к базе данных')
+
+            with connection.cursor() as cursor:
+                insert_query = "INSERT INTO users_links (user_id, link, disable)" + f" VALUES ({chat_id}, '{link}', 0);"
+                print(insert_query)
+                cursor.execute(insert_query)
+                connection.commit()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        connection.close()
+
+
+"""
+    Обработка команды start
+"""
+
+
 def start(update, context):
     first_name = update.message.chat.first_name
     update.message.reply_text(
@@ -63,38 +84,119 @@ def start(update, context):
     get_or_create(update.message.chat_id, first_name)
 
 
-# Обработка команды help
+"""
+    Обработка команды help
+"""
+
+
 def help(update, context):
-    update.message.reply_text('Подсказки в разработке...')
+    update.message.reply_text('start - Запуск бота\ndisplay - отображение всех ссылок\ndelete <id записи> - удаление ссылки (можно узнать набрав команду /display - первое значение)')
 
 
-# Возврат ошибки пользователю
+"""
+    Обработка команды display
+"""
+
+
+def display(update, context):
+    try:
+        connection = mysql.connector.connect(host=host,
+                                             database=database,
+                                             user=user,
+                                             password=password)
+        if not connection.is_connected():
+            print('Ошибка подключения')
+
+        else:
+            print('Успешное подключение к базе данных')
+    except Error as e:
+        print(e)
+
+    try:
+        with connection.cursor() as cursor:
+            select_all_rows = f"SELECT * FROM users_links WHERE user_id = {update.effective_chat.id};"
+            cursor.execute(select_all_rows)
+            rows = cursor.fetchall()
+            for row in rows:
+                print(str(row))
+                l = str(row)
+                update.message.reply_text(l)
+    except:
+        update.message.reply_text('Не нахожу ссылок')
+
+
+"""
+    Обработка команды delete
+    :argument int
+"""
+
+
+def delete(update, context):
+    this_id = int(' '.join(context.args))
+    try:
+        connection = mysql.connector.connect(host=host,
+                                             database=database,
+                                             user=user,
+                                             password=password)
+        if not connection.is_connected():
+            print('Ошибка подключения')
+
+        else:
+            print('Успешное подключение к базе данных')
+    except Error as e:
+        print(e)
+    # try:
+    with connection.cursor() as cursor:
+        delete_data = "DELETE FROM users_links WHERE id = " + f"{this_id};"
+        cursor.execute(delete_data)
+        connection.commit()
+        update.message.reply_text('Успешно удалено')
+
+"""
+    Возврат ошибки пользователю
+"""
+
+
 def error(update, context):
     update.message.reply_text('Произошла ошибка бота :(')
 
 
-# Обработка текстовых сообщений
+"""
+    Обработка текстовых сообщений
+"""
+
+
 def echo(update, context):
-    translator = Translator(to_lang="ru")
-    translation = translator.translate(update.message.text)
-    text = 'Перевожу: ' + translation
-    context.bot.send_message(chat_id=update.effective_chat.id,
-                             text=text)
+    link = update.message.text
+    l = re.findall("(?P<url>https?://[^\s]+)", link)
+    if len(l) == 1:
+        add_link_to_db(update.effective_chat.id, l[0])
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Добавил в базу данных")
+    elif len(l) > 0:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="Отправляй ссылки по очереди)")
+    else:
+        translator = Translator(to_lang="ru")
+        translation = translator.translate(update.message.text)
+        text = 'Перевожу: ' + translation
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text=text)
 
 
-# Телеграм бот
+"""
+    Телеграм бот
+"""
+
+
 def main():
-    debug_bt = True
-    if debug_bt:
-        connect()
-
-    TOKEN = "5095243696:AAFRdkSXJsV5Ly_CwnhH5dKmpC-34dxXCLw"
-
     updater = Updater(TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("display", display))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("delete", delete))
 
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     dispatcher.add_handler(echo_handler)
@@ -108,4 +210,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
