@@ -6,7 +6,7 @@ from secrets import TOKEN, host, database, user, password
 import re
 
 """
-    Получить/Создать пользователя телеграмм
+    Получить / создать пользователя tg
 """
 
 
@@ -43,7 +43,7 @@ def get_or_create(chat_id, name):
 
 
 """
-    Добавить ссылку для пользователя тг
+    Добавить ссылку для пользователя tg
 """
 
 
@@ -151,6 +151,9 @@ def delete(update, context):
         cursor.execute(delete_data)
         connection.commit()
         update.message.reply_text('Успешно удалено')
+    # except:
+    #     update.message.reply_text('Не нахожу ссылку с такими параметрами')
+
 
 """
     Возврат ошибки пользователю

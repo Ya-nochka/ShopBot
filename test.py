@@ -6,7 +6,7 @@ import time
 
 
 """
-    Здесь идентификатор API, хэш и строка сеанса
+    Your API ID, hash and session string here
 """
 api_id = int('16333584')
 api_hash = "c4644b465027ca9e4ced09d1f60f34f2"
